@@ -1,7 +1,6 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/Apierror.js";
 import { userModel } from "../models/userModel.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { remedyModel } from "../models/remedyModel.js";
 
@@ -31,7 +30,7 @@ const createRemedy = asyncHandler(async (req, res) => {
         if (!user) {
             throw new ApiError(404, "User not found");
         }
-
+        
         const isVerified = user.isprofessional ? true : false;
 
         const remedy = await remedyModel.create({

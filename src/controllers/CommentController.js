@@ -113,9 +113,30 @@ const addCommentonVideo = asyncHandler(async (req, res) => {
       owner: req.user?._id,
     });
     if (!comment) throw new ApiError(405, "failed to comment on video");
+
+    // Use aggregation to include ownerDetail
+    const populatedComment = await commentModel.aggregate([
+      { $match: { _id: comment._id } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "owner",
+          foreignField: "_id",
+          as: "ownerDetail",
+        },
+      },
+      {
+        $project: {
+          "ownerDetail.password": 0, // Exclude sensitive fields
+          "ownerDetail.watchHistory": 0,
+          "ownerDetail.refreshToken": 0,
+        },
+      },
+    ]);
+
     return res
       .status(200)
-      .json(new ApiResponse(200, comment, "comment Success"));
+      .json(new ApiResponse(200, populatedComment[0], "comment Success"));
   } catch (error) {
     res.send(`Internal server Error : ${error}`);
   }
@@ -129,9 +150,30 @@ const addCommentonProduct = asyncHandler(async (req, res) => {
       owner: req.user?._id,
     });
     if (!comment) throw new ApiError(405, "failed to comment on product");
+
+    // Use aggregation to include ownerDetail
+    const populatedComment = await commentModel.aggregate([
+      { $match: { _id: comment._id } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "owner",
+          foreignField: "_id",
+          as: "ownerDetail",
+        },
+      },
+      {
+        $project: {
+          "ownerDetail.password": 0, // Exclude sensitive fields
+          "ownerDetail.watchHistory": 0,
+          "ownerDetail.refreshToken": 0,
+        },
+      },
+    ]);
+
     return res
       .status(200)
-      .json(new ApiResponse(200, comment, "comment Success"));
+      .json(new ApiResponse(200, populatedComment[0], "comment Success"));
   } catch (error) {
     res.send(`Internal server Error : ${error}`);
   }

@@ -3,16 +3,18 @@ import {
     getLikedProduct,
     toggleCommentLike,
     toggleProductLike,
-    toggleVideoLike
+    toggleVideoLike,
+    likedByUserOrNot
 } from "../controllers/likeController.js"
 import {verifyJWT} from "../middlewares/auth.middleware.js"
 
 const router = Router();
-router.use(verifyJWT); // Apply verifyJWT middleware to all routes in this file
 
-router.route("/toggle/p/:productId").post(toggleProductLike);
-router.route("/toggle/c/:commentId").post(toggleCommentLike);
-router.route("/toggle/v/:videoId").post(toggleVideoLike);
+
+router.route("/toggle/p/:productId").post(verifyJWT, toggleProductLike);
+router.route("/toggle/c/:commentId").post(verifyJWT, toggleCommentLike);
+router.route("/toggle/v/:videoId").post(verifyJWT, toggleVideoLike);
 router.route("/product").get(getLikedProduct);
+router.route("/byUser/:remedyId").post(verifyJWT, likedByUserOrNot);
 
 export default router

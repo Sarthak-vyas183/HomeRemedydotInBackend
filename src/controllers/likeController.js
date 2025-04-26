@@ -118,15 +118,38 @@ const getLikedProduct = asyncHandler(async (req, res) => {
     const userId = req.user?._id;
     if (!isValidObjectId(userId)) throw new ApiError(400, "unauthorized user");
     const LikedVideos = await LikeModel.find({
-      $and: [{ likedBy: userId }, { video: { $exists: true } }]
+      $and: [{ likedBy: userId }]
     });
     if (!LikedVideos) {
       throw new ApiError(404, "No liked video found");
     }
-    return res.status(200).json(new ApiResponse(200,))
+    return res.status(200).json({msg : "document Found", LikedVideos})
   } catch (error) {
     res.status(500).send(`Internal server Error : ${error}`)
   }
 });
 
-export { toggleCommentLike, toggleProductLike, getLikedProduct, toggleVideoLike };
+const likedByUserOrNot = asyncHandler(async (req, res) => {
+  try {
+    const { remedyId } = req.params;
+    const userId = req.user?._id;
+    if (!remedyId || !userId) {
+      return res.status(404).send("Invalid user or remedy");
+    }
+
+    // Check if a like exists for this remedy and user
+    const likeDocument = await LikeModel.findOne({
+      productId: remedyId,
+      likedBy: userId,
+    });
+
+    return res.status(200).json({
+      liked: !!likeDocument,
+      like: likeDocument || null,
+    });
+  } catch (error) {
+    res.status(500).send(`Internal server Error : ${error}`);
+  }
+});
+
+export { toggleCommentLike, toggleProductLike, getLikedProduct, toggleVideoLike, likedByUserOrNot };

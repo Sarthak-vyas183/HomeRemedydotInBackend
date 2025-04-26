@@ -33,6 +33,10 @@ const remedySchema = new mongoose.Schema({
         max: 5,
         default: 3
     },
+    image: {
+        type: String,
+        default: "https://res.cloudinary.com/sarthak183/image/upload/v1745504833/onasro6sixpgowakewhu.jpg"
+    },
     EcommerceUrl: {
         type: String,
         default: "https://www.amazon.in/"
