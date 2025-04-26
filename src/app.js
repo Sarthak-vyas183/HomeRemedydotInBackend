@@ -23,6 +23,7 @@ import healthcheckRouter from "./routes/healthcheckRouter.js"
 import remedyRouter from "./routes/RemedyRouter.js"
 import professionalRouter from './routes/ProfessionalRouter.js';
 import AdminRouter from './routes/AdminRouter.js'
+import BookMarkRouter from "./routes/BookMarkRouter.js"
 
 app.use("/api/v1/user", userRouter)
 app.use("/api/v1/videos", videoRouter)
@@ -32,5 +33,6 @@ app.use("/api/v1/healthCheck", healthcheckRouter)
 app.use("/api/v1/remedy", remedyRouter);
 app.use("/api/v1/p", professionalRouter);
 app.use("/api/v1/admin", AdminRouter)
+app.use("/api/v1/Bookmark", BookMarkRouter)
 
 export { app }
