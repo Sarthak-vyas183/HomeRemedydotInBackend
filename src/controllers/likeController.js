@@ -152,4 +152,21 @@ const likedByUserOrNot = asyncHandler(async (req, res) => {
   }
 });
 
-export { toggleCommentLike, toggleProductLike, getLikedProduct, toggleVideoLike, likedByUserOrNot };
+const getLikeCount = asyncHandler(async (req, res) => {
+  try {
+    const { productId } = req.params;
+    if (!isValidObjectId(productId)) throw new ApiError(400, "Invalid productId");
+
+    // Count the number of likes for the given productId
+    const likeCount = await LikeModel.countDocuments({ productId: productId, liked: true });
+
+    return res.status(200).json({
+      message: "Like count found",
+      numOfLike: likeCount,
+    });
+  } catch (error) {
+    res.status(500).send(`Internal server Error : ${error}`);
+  }
+});
+
+export { toggleCommentLike, toggleProductLike, getLikedProduct, toggleVideoLike, likedByUserOrNot, getLikeCount };
