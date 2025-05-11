@@ -12,11 +12,11 @@ import {
   coverImageUpdate,
   getWatchHistory,
   SendLoggedUserData,
-  becomeProfessional
+  becomeProfessional,
+  getMyRemedies
 } from "../controllers/userController.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
-import multer from "multer";
 
 router.route("/register").post(
   upload.fields([
@@ -49,5 +49,6 @@ router
 router.route("/getWatchHistory").post(verifyJWT, getWatchHistory);
 router.route("/verifyUserToken").post(verifyJWT, SendLoggedUserData);
 router.route("/becomeProfessional").post(verifyJWT, upload.single("RMP_Img"), becomeProfessional);
+router.route("/getmyremedies").post(verifyJWT, getMyRemedies);
 
 export default router;

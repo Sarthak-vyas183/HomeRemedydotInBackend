@@ -2,6 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/Apierror.js";
 import { userModel } from "../models/userModel.js";
 import { P_Req_model } from "../models/Become.professional.Model.js";
+import {remedyModel} from "../models/remedyModel.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
@@ -485,6 +486,31 @@ const becomeProfessional = asyncHandler(async (req, res) => {
   }
 });
 
+const getMyRemedies = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.user?._id;
+    if (!userId) {
+      throw new ApiError(401, "Unauthorized: User not found");
+    }
+
+    const remedies = await remedyModel.find({ userId }).sort({ createdAt: -1 });
+
+    if (!remedies || remedies.length === 0) {
+      return res
+        .status(404)
+        .json(new ApiResponse(404, [], "No remedies found for this user"));
+    }
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, remedies, "User remedies fetched successfully"));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(new ApiResponse(500, null, `Internal server error: ${error}`));
+  }
+});
+
 export {
   registerUser,
   loginUser,
@@ -498,4 +524,5 @@ export {
   getWatchHistory,
   SendLoggedUserData,
   becomeProfessional,
+  getMyRemedies
 };
