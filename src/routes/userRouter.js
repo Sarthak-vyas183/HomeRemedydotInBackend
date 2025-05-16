@@ -13,10 +13,12 @@ import {
   getWatchHistory,
   SendLoggedUserData,
   becomeProfessional,
-  getMyRemedies
+  getMyRemedies,
+  VerifyRemedyReq
 } from "../controllers/userController.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { verify } from "jsonwebtoken";
 
 router.route("/register").post(
   upload.fields([
@@ -50,5 +52,7 @@ router.route("/getWatchHistory").post(verifyJWT, getWatchHistory);
 router.route("/verifyUserToken").post(verifyJWT, SendLoggedUserData);
 router.route("/becomeProfessional").post(verifyJWT, upload.single("RMP_Img"), becomeProfessional);
 router.route("/getmyremedies").post(verifyJWT, getMyRemedies);
+router.route("/VerifyRemedyReq").post(verifyJWT, VerifyRemedyReq);
+
 
 export default router;

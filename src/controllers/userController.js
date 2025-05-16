@@ -7,6 +7,7 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
+import { isprofessional } from "../middlewares/auth.middleware.js";
 
 const generateAccessAndRefereshTokens = async (userId) => {
   try {
@@ -511,6 +512,34 @@ const getMyRemedies = asyncHandler(async (req, res) => {
   }
 });
 
+const VerifyRemedyReq = asyncHandler(async (req, res) => {
+  try {
+    const { email, about } = req.body;
+    if (!email || !about) {
+      throw new ApiError(400, "Email and about fields are required");
+    }
+
+    // Find a professional user with the given email
+    const professional = await userModel.findOne({ email: email, isprofessional: true });
+
+    if (!professional) {
+      return res
+        .status(404)
+        .json(new ApiResponse(404, null, "No professional found with this email"));
+    }
+
+    // You can add more logic here, e.g., send a notification or log the request
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, { professional, about }, "Professional found and request processed"));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(new ApiResponse(500, null, `Internal server error: ${error}`));
+  }
+});
+
 export {
   registerUser,
   loginUser,
@@ -524,5 +553,6 @@ export {
   getWatchHistory,
   SendLoggedUserData,
   becomeProfessional,
-  getMyRemedies
+  getMyRemedies,
+  VerifyRemedyReq
 };
