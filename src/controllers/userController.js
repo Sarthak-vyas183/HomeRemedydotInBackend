@@ -2,7 +2,8 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/Apierror.js";
 import { userModel } from "../models/userModel.js";
 import { P_Req_model } from "../models/Become.professional.Model.js";
-import {remedyModel} from "../models/remedyModel.js"
+import { remedyModel } from "../models/remedyModel.js"
+import { VerifyRemedyReq } from "../models/VerifyRemedyReq.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
@@ -115,7 +116,7 @@ const registerUser = asyncHandler(async (req, res) => {
         "Registration success"
       )
     );
-}); 
+});
 
 const loginUser = asyncHandler(async (req, res) => {
 
@@ -281,7 +282,7 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 const updateAccountDetail = asyncHandler(async (req, res) => {
   try {
     const { username, fullName, email, ph_no, bio, location, preferredLanguage } = req.body;
-    if ([username, fullName, email,  ph_no].some((field) => field?.trim() === "")) {
+    if ([username, fullName, email, ph_no].some((field) => field?.trim() === "")) {
       return new ApiError(
         401,
         "email , fullName , and email all fields are require"
@@ -514,12 +515,11 @@ const getMyRemedies = asyncHandler(async (req, res) => {
 
 const VerifyRemedyReq = asyncHandler(async (req, res) => {
   try {
-    const { email, about } = req.body;
+    const { email, about, message } = req.body;
     if (!email || !about) {
       throw new ApiError(400, "Email and about fields are required");
     }
 
-    // Find a professional user with the given email
     const professional = await userModel.findOne({ email: email, isprofessional: true });
 
     if (!professional) {
@@ -527,12 +527,20 @@ const VerifyRemedyReq = asyncHandler(async (req, res) => {
         .status(404)
         .json(new ApiResponse(404, null, "No professional found with this email"));
     }
+    const CreatedReq = VerifyRemedyReq.create({
+      userId: req.user?._id,
+      requestingTO: email,
+      about: about,
+      message: message
+    })
 
-    // You can add more logic here, e.g., send a notification or log the request
+    if (!CreatedReq) {
+      res.status(404).send("failed to send");
+      return;
+    }
 
-    return res
-      .status(200)
-      .json(new ApiResponse(200, { professional, about }, "Professional found and request processed"));
+    res.status(200).json({ msg: "Request sent", req: CreatedReq });
+
   } catch (error) {
     return res
       .status(500)
