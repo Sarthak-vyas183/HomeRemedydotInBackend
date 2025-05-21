@@ -3,7 +3,7 @@ import { ApiError } from "../utils/Apierror.js";
 import { userModel } from "../models/userModel.js";
 import { P_Req_model } from "../models/Become.professional.Model.js";
 import { remedyModel } from "../models/remedyModel.js"
-import { VerifyRemedyReq } from "../models/VerifyRemedyReq.js";
+import { VerifyRemedyReq as VerifyRemedyReqModel } from "../models/VerifyRemedyReq.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
@@ -527,19 +527,20 @@ const VerifyRemedyReq = asyncHandler(async (req, res) => {
         .status(404)
         .json(new ApiResponse(404, null, "No professional found with this email"));
     }
-    const CreatedReq = VerifyRemedyReq.create({
+    // Use the model, not the controller function, for creation:
+    const createdReq = await VerifyRemedyReqModel.create({
       userId: req.user?._id,
       requestingTO: email,
       about: about,
       message: message
-    })
+    });
 
-    if (!CreatedReq) {
+    if (!createdReq) {
       res.status(404).send("failed to send");
       return;
     }
 
-    res.status(200).json({ msg: "Request sent", req: CreatedReq });
+    res.status(200).json({ msg: "Request sent", req: createdReq });
 
   } catch (error) {
     return res
@@ -547,6 +548,8 @@ const VerifyRemedyReq = asyncHandler(async (req, res) => {
       .json(new ApiResponse(500, null, `Internal server error: ${error}`));
   }
 });
+
+
 
 export {
   registerUser,
