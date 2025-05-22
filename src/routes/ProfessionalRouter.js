@@ -12,4 +12,3 @@ router.get('/pendingRemedies', getPendingRemedies);
 router.route("/getAllVerificationReq").get(verifyJWT, isprofessional, getAllReqs);
 
 export default router;
-

@@ -3,7 +3,7 @@ import { remedyModel } from "../models/remedyModel.js";
 import { ApiError } from "../utils/Apierror.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { VerifyRemedyReq as VerifyRemedyReqModel } from "../models/VerifyRemedyReq.js";
+import { VerifyRemedyReq } from "../models/VerifyRemedyReq.js";
 
 const verifyRemedy = asyncHandler(async (req, res) => {
     try {
@@ -114,13 +114,17 @@ const getAllReqs = asyncHandler(async (req, res) => {
     if (!email) {
       return res.status(400).json({ msg: "User email not found in request" });
     }
-    const Reqs = await VerifyRemedyReqModel.find({ requestingTO: email });
-    console.log(Reqs);
+    const Reqs = await VerifyRemedyReq.find({ requestingTO: email });
+    console.log("Email:", email);
+    console.log("Reqs:", Reqs);
+    
+    if (!Reqs || Reqs.length === 0) {
+      return res.status(404).json({ msg: "Reqs not found", data: [] });
+    }
     res.status(200).json({ msg: "All the req fetched", data: Reqs });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ msg: "Internal server error", err: error?.message || error });
   }
-})
+});
 
 export { verifyRemedy, rejectRemedy, getPendingRemedies,  getAllReqs };
