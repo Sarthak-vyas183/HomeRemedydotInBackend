@@ -8,7 +8,7 @@ router.use(isprofessional);
 
 router.post('/verifyRemedy/:id', verifyRemedy);
 router.post('/rejectRemedy/:id', rejectRemedy);
-router.get('/pendingRemedies', getPendingRemedies);
-router.route("/getAllVerificationReq").get(verifyJWT, isprofessional, getAllReqs);
+router.post('/pendingRemedies', getPendingRemedies);
+router.route("/getAllVerificationReq").get(getAllReqs);
 
 export default router;

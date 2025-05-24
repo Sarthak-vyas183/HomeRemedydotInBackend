@@ -94,7 +94,7 @@ const rejectRemedy = asyncHandler(async (req, res) => {
 
 const getPendingRemedies = asyncHandler(async (req, res) => {
     try {
-        const pendingRemedies = await remedyModel.find({ status: "pending" });
+        const pendingRemedies = await remedyModel.find({isVerified : "false"});
         if (!pendingRemedies || pendingRemedies.length === 0) {
             throw new ApiError(404, "No pending remedies found");
         }
