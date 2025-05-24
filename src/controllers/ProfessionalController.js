@@ -114,7 +114,7 @@ const getAllReqs = asyncHandler(async (req, res) => {
     if (!email) {
       return res.status(400).json({ msg: "User email not found in request" });
     }
-    const Reqs = await VerifyRemedyReq.find({ requestingTO: email });
+    const Reqs = await VerifyRemedyReq.find({ requestingTO : email });
     console.log("Email:", email);
     console.log("Reqs:", Reqs);
     
