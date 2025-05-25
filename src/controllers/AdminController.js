@@ -1,6 +1,8 @@
 import { userModel } from "../models/userModel.js";
+import {remedyModel} from "../models/remedyModel.js"
 import { asyncHandler } from "../utils/asyncHandler.js";
 import {P_Req_model} from "../models/Become.professional.Model.js"
+import { ApiError } from "../utils/Apierror.js";
 
 const get_All_users = asyncHandler(async (req, res) => {
     try {
@@ -46,6 +48,18 @@ const getAllProfessionalReq = asyncHandler(async (req, res) => {
     }
 });
 
+const getAllRemedies = asyncHandler(async(req, res) => {
+    try {
+        const AllRemedies = await remedyModel.find();
+        if(!AllRemedies ||  AllRemedies.length == 0) {
+           return res.status(404).send("remedies not found");
+        }
+        res.status(200).json({msg : "All Remedies Fetched", data : AllRemedies});
+    } catch (error) {
+        res.status(404).send(`Internal Server error : ${error}`);
+    }
+})
 
 
-export { get_All_users, verifyProfessional, getAllProfessionalReq }
+
+export { get_All_users, verifyProfessional, getAllProfessionalReq, getAllRemedies }
