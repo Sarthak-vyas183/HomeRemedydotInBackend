@@ -3,6 +3,7 @@ import { ApiError } from "../utils/Apierror.js";
 import { userModel } from "../models/userModel.js";
 import { P_Req_model } from "../models/Become.professional.Model.js";
 import { remedyModel } from "../models/remedyModel.js"
+import { ContactModel } from "../models/ContactModel.js";
 import { VerifyRemedyReq as VerifyRemedyReqModel } from "../models/VerifyRemedyReq.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -527,7 +528,7 @@ const VerifyRemedyReq = asyncHandler(async (req, res) => {
         .status(404)
         .json(new ApiResponse(404, null, "No professional found with this email"));
     }
-    // Use the model, not the controller function, for creation:
+   
     const createdReq = await VerifyRemedyReqModel.create({
       userId: req.user?._id,
       requestingTO: email,
@@ -549,7 +550,26 @@ const VerifyRemedyReq = asyncHandler(async (req, res) => {
   }
 });
 
-
+const getconnect = asyncHandler(async (req, res) => {
+  try {
+    const { fullname, email, contact, message } = req.body;
+    if ([fullname, email, contact, message].some(field => !field || field.trim() === "")) {
+      return res.status(400).json({ msg: "All fields are required" });
+    }
+    const contactReq = await ContactModel.create({
+      fullname,
+      email,
+      contact,
+      message
+    });
+    if (!contactReq) {
+      return res.status(500).send("creation failed");
+    }
+    res.status(200).json({ msg: "contact message Sent", contactReq });
+  } catch (error) {
+    res.status(501).send("Internal server error");
+  }
+})
 
 export {
   registerUser,
@@ -565,5 +585,6 @@ export {
   SendLoggedUserData,
   becomeProfessional,
   getMyRemedies,
-  VerifyRemedyReq
+  VerifyRemedyReq,
+  getconnect
 };

@@ -132,7 +132,7 @@ const get_Vr_RemedyById = asyncHandler(async (req, res) => {
     }
 });
 
-// Remedy Search API
+
 const searchRemedies = asyncHandler(async (req, res) => {
     try {
         const { q } = req.query;

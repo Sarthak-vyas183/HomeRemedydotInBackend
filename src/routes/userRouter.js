@@ -14,7 +14,8 @@ import {
   SendLoggedUserData,
   becomeProfessional,
   getMyRemedies,
-  VerifyRemedyReq
+  VerifyRemedyReq,
+  getconnect
 } from "../controllers/userController.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -51,7 +52,7 @@ router.route("/verifyUserToken").post(verifyJWT, SendLoggedUserData);
 router.route("/becomeProfessional").post(verifyJWT, upload.single("RMP_Img"), becomeProfessional);
 router.route("/getmyremedies").post(verifyJWT, getMyRemedies);
 router.route("/VerifyRemedyReq").post(verifyJWT, VerifyRemedyReq);
-
+router.route("/contact").post(getconnect);
 
 
 
