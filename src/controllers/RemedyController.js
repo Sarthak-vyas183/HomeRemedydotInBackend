@@ -132,4 +132,25 @@ const get_Vr_RemedyById = asyncHandler(async (req, res) => {
     }
 });
 
-export { get_Vr_Remedies, createRemedy, updateRemedy, deleteRemedy, get_Vr_RemedyById };
+// Remedy Search API
+const searchRemedies = asyncHandler(async (req, res) => {
+    try {
+        const { q } = req.query;
+        if (!q || q.trim() === "") {
+            return res.status(400).json({ msg: "Search query required", statusCode: 400 });
+        }
+        const regex = new RegExp(q, "i");
+        const remedies = await remedyModel.find({
+            $or: [
+                { title: regex },
+                { description: regex },
+                { ailments: { $in: [regex] } }
+            ]
+        });
+        res.status(200).json({ data: remedies, msg: "Search results", statusCode: 200 });
+    } catch (error) {
+        res.status(500).json({ msg: "Internal server error", statusCode: 500 });
+    }
+});
+
+export { get_Vr_Remedies, createRemedy, updateRemedy, deleteRemedy, get_Vr_RemedyById, searchRemedies };

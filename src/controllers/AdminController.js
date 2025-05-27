@@ -53,10 +53,7 @@ const getAllProfessionalReq = asyncHandler(async (req, res) => {
         console.log(error);
         res.status(500).json({ msg: "Internal server error", statusCode: 500 });
     }
-
 });
-
-
 
 const getAllRemedies = asyncHandler(async (req, res) => {
     try {
