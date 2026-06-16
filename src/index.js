@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, "..");
 
 dotenv.config({
-    path: path.resolve(projectRoot, "..", ".env")
+    path: path.resolve(projectRoot, ".env")
 })
 
 app.use("/public", express.static(path.join(__dirname, "public")));

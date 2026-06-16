@@ -124,10 +124,10 @@ const loginUser = asyncHandler(async (req, res) => {
   const { email, username, password } = req.body;
 
   if (!username && !email) {
-    throw new ApiError(400, "username or email is required");
+    throw new ApiError(400, "username or email is required please check");
   }
 
-  // Here is an alternative of above code based on logic discussed in video:
+  // Here is an alternative of  code based on logic discussed
   // if (!(username || email)) {
   //     throw new ApiError(400, "username or email is required")
 
@@ -349,9 +349,11 @@ const coverImageUpdate = asyncHandler(async (req, res) => {
   try {
     //uplading file from local to clodinary and get URL
     const coverImageLocalPath = req.file?.path;
+    console.log('check');
     if (!coverImageLocalPath)
       return new ApiError(401, "coverImage file missing");
     const coverImage = await uploadOnCloudinary(coverImageLocalPath);
+    console.log(coverImage);
     if (!coverImage.url)
       return new ApiError(401, "Error while uploading Avatar on cludinary");
 
@@ -377,6 +379,7 @@ const coverImageUpdate = asyncHandler(async (req, res) => {
     throw new ApiError(500, `Internal server error : ${error}`);
   }
 });
+
 
 const getWatchHistory = asyncHandler(async (req, res) => {
   try {
