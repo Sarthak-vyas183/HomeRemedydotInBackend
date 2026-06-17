@@ -21,6 +21,7 @@ const get_Vr_Remedies = asyncHandler(async (req, res) => {
 const createRemedy = asyncHandler(async (req, res) => {
     try {
         const { title, description, ingredients, steps, ailments, effectiveness, EcommerceUrl } = req.body;
+        console.log(req.body);
         const userId = req.user?._id;
         if ([title, description].some((field) => field?.trim() === "")) {
             throw new ApiError(400, "All fields are required");
@@ -30,7 +31,7 @@ const createRemedy = asyncHandler(async (req, res) => {
         if (!user) {
             throw new ApiError(404, "User not found");
         }
-        
+
         const isVerified = user.isprofessional ? true : false;
 
         const remedy = await remedyModel.create({
@@ -62,7 +63,6 @@ const updateRemedy = asyncHandler(async (req, res) => {
         if ([title, description].some((field) => field?.trim() === "")) {
             throw new ApiError(400, "All fields are required");
         }
-
         const [user, remedy] = await Promise.all([
             userModel.findById(userId),
             remedyModel.findById(remedyId)
@@ -120,11 +120,12 @@ const deleteRemedy = asyncHandler(async (req, res) => {
 const get_Vr_RemedyById = asyncHandler(async (req, res) => {
     try {
         const remedy = await remedyModel.findById(req.params.id).populate('userId', '-password -refreshToken -watchHistory -createdAt -updatedAt');
+        const userid = req.user?._id;
         if (!remedy) {
             res.status(405).json(new ApiResponse(405, remedy, "No remedy found"));
         }
-        if (remedy.isVerified === false) {
-            res.status(405).json({ msg: "Remedy is not verified yet" });
+        if (remedy.isVerified === false && remedy.userId == userid) {
+            res.status(405).json({ msg: "Remedy is not verified yet and you are not the owner" });
         }
         res.status(200).json(new ApiResponse(200, remedy, "Remedy fetched successfully"));
     } catch (error) {

@@ -17,4 +17,4 @@ router.route("/:id").patch(verifyJWT, updateRemedy).delete(verifyJWT, deleteReme
                     .post(get_Vr_RemedyById);      
 router.get("/search", searchRemedies);
 
-export default router;
+export default router; 
