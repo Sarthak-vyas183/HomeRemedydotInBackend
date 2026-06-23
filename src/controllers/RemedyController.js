@@ -142,13 +142,14 @@ const searchRemedies = asyncHandler(async (req, res) => {
         }
         const regex = new RegExp(q, "i");
         const remedies = await remedyModel.find({
+            isVerified: true,
             $or: [
                 { title: regex },
                 { description: regex },
                 { ailments: { $in: [regex] } }
             ]
         });
-        res.status(200).json({ data: remedies, msg: "Search results", statusCode: 200 });
+        res.status(200).json(new ApiResponse(200, remedies, "Search results"));
     } catch (error) {
         res.status(500).json({ msg: "Internal server error", statusCode: 500 });
     }

@@ -15,7 +15,9 @@ import {
   becomeProfessional,
   getMyRemedies,
   VerifyRemedyReq,
-  getconnect
+  getconnect,
+  deleteAccount,
+  VerifyProfessionalEmail
 } from "../controllers/userController.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -43,7 +45,7 @@ router.route("/getcurrentUser").post(verifyJWT, getCurrentUser);
 router.route("/updateAccountDetail").patch(verifyJWT, updateAccountDetail);
 router
   .route("/updateAvatar")
-  .patch(verifyJWT, upload.single("avatar"), updateAvatar);
+  .patch(verifyJWT, upload.any(), updateAvatar);
 router
   .route("/updateCoverImage")
   .patch(verifyJWT, upload.single("coverImage"), coverImageUpdate);
@@ -51,9 +53,10 @@ router.route("/getWatchHistory").post(verifyJWT, getWatchHistory);
 router.route("/verifyUserToken").post(verifyJWT, SendLoggedUserData);
 router.route("/becomeProfessional").post(verifyJWT, upload.single("RMP_Img"), becomeProfessional);
 router.route("/getmyremedies").post(verifyJWT, getMyRemedies);
-router.route("/VerifyRemedyReq").post(verifyJWT, VerifyRemedyReq);
+router.route("/verifyProfessionalEmail").post(VerifyProfessionalEmail);
+router.route("/connect_to_dr").post(verifyJWT, VerifyRemedyReq);
 router.route("/contact").post(getconnect);
-
+router.route("/deleteAccount").delete(verifyJWT, deleteAccount);
 
 
 export default router;

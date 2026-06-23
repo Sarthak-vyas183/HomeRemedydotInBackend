@@ -56,7 +56,7 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(409, "username and with user already exist");
   }
 
-  const avatarLocalPath = req.files?.avatar[0]?.path;
+  const avatarLocalPath = req.files?.avatar?.[0]?.path;
   //const coverImageLocalPath = req.files?.coverImage[0].path
 
   let coverImageLocalPath;
@@ -68,15 +68,15 @@ const registerUser = asyncHandler(async (req, res) => {
     coverImageLocalPath = req.files?.coverImage[0].path;
   }
 
-  if (!avatarLocalPath) {
-    throw new ApiError(400, "Avatar file required");
+  let avatar = null;
+  if (avatarLocalPath) {
+    avatar = await uploadOnCloudinary(avatarLocalPath);
+    if (!avatar) {
+      throw new ApiError(409, "Error while uploading avatar on cloudinary");
+    }
   }
-  const avatar = await uploadOnCloudinary(avatarLocalPath);
-  const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
-  if (!avatar) {
-    throw new ApiError(409, "username and with with user already exist");
-  }
+  const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
   const user = await userModel.create({
     fullName,
@@ -84,7 +84,7 @@ const registerUser = asyncHandler(async (req, res) => {
     password,
     username,
     ph_no, // Ensure ph_no is included here
-    avatar: avatar.url,
+    avatar: avatar?.url || "",
     coverImage: coverImage?.url || "",
   });
   const createdUser = await userModel
@@ -317,8 +317,15 @@ const updateAccountDetail = asyncHandler(async (req, res) => {
 
 const updateAvatar = asyncHandler(async (req, res) => {
   try {
+
     //uplading file from local to clodinary and get URL
-    const AvatarLocalPath = req.file?.path;
+    const AvatarLocalPath =
+      req.file?.path ||
+      req.files?.avatar?.[0]?.path ||
+      req.files?.image?.[0]?.path ||
+      req.files?.profileImg?.[0]?.path ||
+      req.files?.avatarImage?.[0]?.path ||
+      req.files?.[0]?.path;
     if (!AvatarLocalPath) return new ApiError(401, "Avatar file missing");
     const avatar = await uploadOnCloudinary(AvatarLocalPath);
     if (!avatar.url)
@@ -348,7 +355,13 @@ const updateAvatar = asyncHandler(async (req, res) => {
 const coverImageUpdate = asyncHandler(async (req, res) => {
   try {
     //uplading file from local to clodinary and get URL
-    const coverImageLocalPath = req.file?.path;
+    const coverImageLocalPath =
+      req.file?.path ||
+      req.files?.coverImage?.[0]?.path ||
+      req.files?.image?.[0]?.path ||
+      req.files?.profileImg?.[0]?.path ||
+      req.files?.coverImage?.[0]?.path ||
+      req.files?.[0]?.path;
     console.log('check');
     if (!coverImageLocalPath)
       return new ApiError(401, "coverImage file missing");
@@ -520,6 +533,7 @@ const getMyRemedies = asyncHandler(async (req, res) => {
 const VerifyRemedyReq = asyncHandler(async (req, res) => {
   try {
     const { email, about, message } = req.body;
+    console.log("Request Body:", req.body);
     if (!email || !about) {
       throw new ApiError(400, "Email and about fields are required");
     }
@@ -531,7 +545,7 @@ const VerifyRemedyReq = asyncHandler(async (req, res) => {
         .status(404)
         .json(new ApiResponse(404, null, "No professional found with this email"));
     }
-   
+
     const createdReq = await VerifyRemedyReqModel.create({
       userId: req.user?._id,
       requestingTO: email,
@@ -546,6 +560,28 @@ const VerifyRemedyReq = asyncHandler(async (req, res) => {
 
     res.status(200).json({ msg: "Request sent", req: createdReq });
 
+  } catch (error) {
+    return res
+      .status(500)
+      .json(new ApiResponse(500, null, `Internal server error: ${error}`));
+  }
+});
+
+const VerifyProfessionalEmail = asyncHandler(async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      throw new ApiError(400, "Email field is required");
+    }
+    const professional = await userModel.findOne({ email: email, isprofessional: true })
+    if (!professional) {
+      return res
+        .status(404)
+        .json(new ApiResponse(404, null, "No professional found with this email"));
+    }
+    return res
+      .status(200)
+      .json(new ApiResponse(200, professional, "Professional found successfully"));
   } catch (error) {
     return res
       .status(500)
@@ -574,6 +610,49 @@ const getconnect = asyncHandler(async (req, res) => {
   }
 })
 
+const deleteAccount = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.user?._id;
+    if (!userId) {
+      throw new ApiError(401, "Unauthorized: User not found");
+    }
+    const password = req.body.password;
+
+    if (!password) {
+      throw new ApiError(400, "Password is required to delete account");
+    }
+
+    const user = await userModel.findById(userId);
+
+    if (!user) {
+      throw new ApiError(404, "User not found");
+    }
+
+    const isPasswordValid = await user.isPasswordCorrect(password);
+
+    if (!isPasswordValid) {
+      throw new ApiError(400, "Invalid credentials");
+    }
+
+    // Delete all related documents first, then delete user
+    await remedyModel.deleteMany({ userId });
+    await P_Req_model.deleteMany({ userId });
+    await ContactModel.deleteMany({ email: req.user.email });
+    await VerifyRemedyReqModel.deleteMany({ userId });
+
+    const deletedUser = await userModel.findByIdAndDelete(userId);
+
+    if (!deletedUser) {
+      throw new ApiError(500, "Failed to delete user account");
+    }
+
+    res.status(200).json(new ApiResponse(200, null, "Account deleted successfully"));
+
+  } catch (error) {
+    throw new ApiError(500, `Internal server error: ${error}`);
+  }
+});
+
 export {
   registerUser,
   loginUser,
@@ -589,5 +668,7 @@ export {
   becomeProfessional,
   getMyRemedies,
   VerifyRemedyReq,
-  getconnect
-};
+  getconnect,
+  deleteAccount,
+  VerifyProfessionalEmail
+}

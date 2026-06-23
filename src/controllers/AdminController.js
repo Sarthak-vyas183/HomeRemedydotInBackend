@@ -42,9 +42,30 @@ const verifyProfessional = asyncHandler(async (req, res) => {
     }
 });
 
+const declineProfessional = asyncHandler(async (req, res) => {
+    try {
+        const requestId = req.body.reqId;
+        if (!requestId) {
+            return res.status(400).json({ msg: "Request ID not provided", statusCode: 400 });
+        }
+        const request = await P_Req_model.findById(requestId);
+        if (!request) {
+            return res.status(404).json({ msg: "Professional request not found", statusCode: 404 });
+        }
+
+        await request.updateOne({ status: "declined" });
+        await request.save();
+
+        res.status(200).json({ msg: "Professional request declined successfully", statusCode: 200 });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ msg: "Internal server error", statusCode: 500 });
+    }
+});
+
 const getAllProfessionalReq = asyncHandler(async (req, res) => {
     try {
-        const reqs = await P_Req_model.find(); // Ensure the query is awaited
+        const reqs = await P_Req_model.find({ status: "pending" }); // Ensure the query is awaited
         if (!reqs || reqs.length === 0) {
             return res.status(404).json({ msg: "No requests found", statusCode: 404 });
         }
@@ -69,4 +90,4 @@ const getAllRemedies = asyncHandler(async (req, res) => {
 
 
 
-export { get_All_users, verifyProfessional, getAllProfessionalReq, getAllRemedies }
+export { get_All_users, verifyProfessional, getAllProfessionalReq, getAllRemedies, declineProfessional }
