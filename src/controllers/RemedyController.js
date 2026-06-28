@@ -32,8 +32,9 @@ const createRemedy = asyncHandler(async (req, res) => {
             throw new ApiError(404, "User not found");
         }
 
-        const isVerified = user.isprofessional ? true : false;
-
+        const isVerified = user.isprofessional || user.isAdmin ? true : false;
+        const status = isVerified ? "verified" : "Pending"
+        const reason = isVerified ? "User is professional or admin" : "we will verify your remedy soon, please wait for the verification process to complete.   "
         const remedy = await remedyModel.create({
             userId,
             title,
@@ -43,7 +44,8 @@ const createRemedy = asyncHandler(async (req, res) => {
             ailments,
             effectiveness,
             EcommerceUrl,
-            isVerified
+            isVerified,
+            verifyInfo: { status }
         });
         if (!remedy) {
             throw new ApiError(400, "Failed to create remedy");

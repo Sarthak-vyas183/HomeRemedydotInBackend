@@ -251,27 +251,38 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 });
 
 const changeCurrentPassword = asyncHandler(async (req, res) => {
-  try {
-    const { oldpassword, newpassword } = req.body;
+  const { oldpassword, newpassword } = req.body;
 
-    const user = await userModel.findById(req.user._id);
-
-    if (!user) {
-      throw new ApiError("400", "user not found");
-    }
-    const isPasswordvalid = user.isPasswordCorrect(oldpassword);
-
-    if (!isPasswordvalid) {
-      throw new ApiError(401, "Invalid oldpassword");
-    }
-    user.password = newpassword;
-    await user.save({ validateBeforeSave: false });
-    return res
-      .status(200)
-      .json(new ApiResponse(200, {}, "password change successfully !"));
-  } catch (error) {
-    throw new ApiError(400, `something went wrong : ${error}`);
+  if (!oldpassword || !newpassword) {
+    throw new ApiError(400, "Both oldpassword and newpassword are required");
   }
+
+  if (typeof newpassword !== "string" || newpassword.length < 6) {
+    throw new ApiError(400, "newpassword must be at least 6 characters long");
+  }
+
+  const user = await userModel.findById(req.user._id).select("+password");
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  const isPasswordValid = await user.isPasswordCorrect(oldpassword);
+
+  if (!isPasswordValid) {
+    throw new ApiError(401, "Invalid old password");
+  }
+
+  if (oldpassword === newpassword) {
+    throw new ApiError(400, "New password must be different from old password");
+  }
+
+  user.password = newpassword;
+  await user.save();
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Password changed successfully"));
 });
 
 const getCurrentUser = asyncHandler(async (req, res) => {
@@ -392,7 +403,6 @@ const coverImageUpdate = asyncHandler(async (req, res) => {
     throw new ApiError(500, `Internal server error : ${error}`);
   }
 });
-
 
 const getWatchHistory = asyncHandler(async (req, res) => {
   try {
