@@ -3,6 +3,8 @@ import { remedyModel } from "../models/remedyModel.js"
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { P_Req_model } from "../models/Become.professional.Model.js"
 import { ApiError } from "../utils/Apierror.js";
+import commentModel from "../models/commentModel.js"
+import { LikeModel } from "../models/likeModel.js"
 
 const get_All_users = asyncHandler(async (req, res) => {
     try {
@@ -88,6 +90,40 @@ const getAllRemedies = asyncHandler(async (req, res) => {
     }
 })
 
+const deleteRemedyByAdmin = asyncHandler(async (req, res) => {
+    const remedyId = req.body?.remedyId || req.params?.remedyId || req.query?.remedyId;
+
+    if (!remedyId) {
+        return res.status(400).json({ msg: "remedy ID is required!", statusCode: 400 });
+    }
+
+    const remedy = await remedyModel.findById(remedyId);
+    if (!remedy) {
+        return res.status(404).json({ msg: "The remedy you are looking for does not exist!", statusCode: 404 });
+    }
+
+    const [deletedRemedy, deletedComments, deletedLikes] = await Promise.all([
+        remedyModel.findByIdAndDelete(remedyId),
+        commentModel.deleteMany({ productId: remedyId }),
+        LikeModel.deleteMany({ productId: remedyId })
+    ]);
+
+    if (!deletedRemedy) {
+        return res.status(500).json({ msg: "Deletion failed!", statusCode: 500 });
+    }
+
+    res.status(200).json({
+        msg: "remedy delete successfully",
+        statusCode: 200,
+        data: {
+            deletedRemedy,
+            deletedCommentsCount: deletedComments.deletedCount || 0,
+            deletedLikesCount: deletedLikes.deletedCount || 0
+        }
+    });
+});
 
 
-export { get_All_users, verifyProfessional, getAllProfessionalReq, getAllRemedies, declineProfessional }
+
+
+export { get_All_users, verifyProfessional, getAllProfessionalReq, getAllRemedies, declineProfessional, deleteRemedyByAdmin }
